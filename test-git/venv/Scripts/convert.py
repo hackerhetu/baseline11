@@ -110,9 +110,148 @@
 #     output_file = sys.argv[2]
 #     json_to_jmx(input_file, output_file)
 #     print(f"Conversion complete. JMX file saved as {output_file}")
-import sys
+# import sys
+# import json
+# import xml.etree.ElementTree as ET
+
+# def extract_url_parts(url):
+#     if '//' in url:
+#         protocol, rest = url.split('//', 1)
+#         domain, *path = rest.split('/', 1)
+#     else:
+#         protocol = ''
+#         domain, *path = url.split('/', 1)
+#     return protocol.rstrip(':'), domain, '/'.join(path) if path else ''
+
+# def create_http_sampler(item):
+#     name = item.get('name', 'Unnamed Request')
+#     sampler = ET.Element("HTTPSamplerProxy", guiclass="HttpTestSampleGui", testclass="HTTPSamplerProxy", testname=name, enabled="true")
+    
+#     elementProp = ET.SubElement(sampler, "elementProp", name="HTTPsampler.Arguments", elementType="Arguments", guiclass="HTTPArgumentsPanel", testclass="Arguments", testname="User Defined Variables", enabled="true")
+#     ET.SubElement(elementProp, "collectionProp", name="Arguments.arguments")
+    
+#     request = item.get('request', {})
+#     if isinstance(request, str):
+#         url = request
+#         method = 'GET'
+#     else:
+#         url = request.get('url', '')
+#         if isinstance(url, dict):
+#             url = url.get('raw', '')
+#         method = request.get('method', 'GET')
+    
+#     protocol, domain, path = extract_url_parts(url)
+    
+#     ET.SubElement(sampler, "stringProp", name="HTTPSampler.domain").text = domain
+#     ET.SubElement(sampler, "stringProp", name="HTTPSampler.protocol").text = protocol
+#     ET.SubElement(sampler, "stringProp", name="HTTPSampler.path").text = path
+#     ET.SubElement(sampler, "stringProp", name="HTTPSampler.method").text = method
+    
+#     # Add more HTTP Sampler parameters
+#     ET.SubElement(sampler, "stringProp", name="HTTPSampler.contentEncoding").text = ""
+#     ET.SubElement(sampler, "stringProp", name="HTTPSampler.port").text = ""
+#     ET.SubElement(sampler, "boolProp", name="HTTPSampler.follow_redirects").text = "true"
+#     ET.SubElement(sampler, "boolProp", name="HTTPSampler.auto_redirects").text = "false"
+#     ET.SubElement(sampler, "boolProp", name="HTTPSampler.use_keepalive").text = "true"
+#     ET.SubElement(sampler, "boolProp", name="HTTPSampler.DO_MULTIPART_POST").text = "false"
+#     ET.SubElement(sampler, "stringProp", name="HTTPSampler.embedded_url_re").text = ""
+#     ET.SubElement(sampler, "stringProp", name="HTTPSampler.connect_timeout").text = ""
+#     ET.SubElement(sampler, "stringProp", name="HTTPSampler.response_timeout").text = ""
+    
+#     if isinstance(request, dict) and 'body' in request:
+#         body = request['body']
+#         if isinstance(body, dict) and 'raw' in body:
+#             boolProp = ET.SubElement(sampler, "boolProp", name="HTTPSampler.postBodyRaw")
+#             boolProp.text = "true"
+#             elementProp = ET.SubElement(sampler, "elementProp", name="HTTPsampler.Arguments", elementType="Arguments")
+#             collectionProp = ET.SubElement(elementProp, "collectionProp", name="Arguments.arguments")
+#             elementProp = ET.SubElement(collectionProp, "elementProp", name="", elementType="HTTPArgument")
+#             ET.SubElement(elementProp, "boolProp", name="HTTPArgument.always_encode").text = "false"
+#             ET.SubElement(elementProp, "stringProp", name="Argument.value").text = body['raw']
+#             ET.SubElement(elementProp, "stringProp", name="Argument.metadata").text = "="
+    
+#     headers = []
+#     if isinstance(request, dict) and 'header' in request:
+#         headers = request['header']
+    
+#     if headers:
+#         headerManager = ET.Element("HeaderManager", guiclass="HeaderPanel", testclass="HeaderManager", testname="HTTP Header Manager", enabled="true")
+#         collectionProp = ET.SubElement(headerManager, "collectionProp", name="HeaderManager.headers")
+#         for header in headers:
+#             elementProp = ET.SubElement(collectionProp, "elementProp", name="", elementType="Header")
+#             ET.SubElement(elementProp, "stringProp", name="Header.name").text = header.get('key', '')
+#             ET.SubElement(elementProp, "stringProp", name="Header.value").text = header.get('value', '')
+#         return [sampler, headerManager]
+    
+#     return [sampler]
+
+# def json_to_jmx(json_file, jmx_file):
+#     with open(json_file, 'r') as f:
+#         data = json.load(f)
+    
+#     root = ET.Element("jmeterTestPlan", version="1.2", properties="5.0", jmeter="5.4.1")
+#     hashTree = ET.SubElement(root, "hashTree")
+    
+#     testPlan = ET.SubElement(hashTree, "TestPlan", guiclass="TestPlanGui", testclass="TestPlan", testname="Test Plan", enabled="true")
+#     ET.SubElement(testPlan, "stringProp", name="TestPlan.comments").text = ""
+#     ET.SubElement(testPlan, "boolProp", name="TestPlan.functional_mode").text = "false"
+#     ET.SubElement(testPlan, "boolProp", name="TestPlan.tearDown_on_shutdown").text = "true"
+#     ET.SubElement(testPlan, "boolProp", name="TestPlan.serialize_threadgroups").text = "false"
+#     elementProp = ET.SubElement(testPlan, "elementProp", name="TestPlan.user_defined_variables", elementType="Arguments", guiclass="ArgumentsPanel", testclass="Arguments", testname="User Defined Variables", enabled="true")
+#     ET.SubElement(elementProp, "collectionProp", name="Arguments.arguments")
+#     ET.SubElement(testPlan, "stringProp", name="TestPlan.user_define_classpath").text = ""
+    
+#     testPlanHashTree = ET.SubElement(hashTree, "hashTree")
+    
+#     threadGroup = ET.SubElement(testPlanHashTree, "ThreadGroup", guiclass="ThreadGroupGui", testclass="ThreadGroup", testname="Thread Group", enabled="true")
+#     ET.SubElement(threadGroup, "stringProp", name="ThreadGroup.on_sample_error").text = "continue"
+#     elementProp = ET.SubElement(threadGroup, "elementProp", name="ThreadGroup.main_controller", elementType="LoopController", guiclass="LoopControlPanel", testclass="LoopController", testname="Loop Controller", enabled="true")
+#     ET.SubElement(elementProp, "boolProp", name="LoopController.continue_forever").text = "false"
+#     ET.SubElement(elementProp, "stringProp", name="LoopController.loops").text = "1"
+#     ET.SubElement(threadGroup, "stringProp", name="ThreadGroup.num_threads").text = "1"
+#     ET.SubElement(threadGroup, "stringProp", name="ThreadGroup.ramp_time").text = "1"
+#     ET.SubElement(threadGroup, "boolProp", name="ThreadGroup.scheduler").text = "false"
+#     ET.SubElement(threadGroup, "stringProp", name="ThreadGroup.duration").text = ""
+#     ET.SubElement(threadGroup, "stringProp", name="ThreadGroup.delay").text = ""
+#     ET.SubElement(threadGroup, "boolProp", name="ThreadGroup.same_user_on_next_iteration").text = "true"
+    
+#     threadGroupHashTree = ET.SubElement(testPlanHashTree, "hashTree")
+    
+#     def process_items(items):
+#         for item in items:
+#             if 'item' in item:
+#                 # This is a folder
+#                 process_items(item['item'])
+#             else:
+#                 # This is a request
+#                 elements = create_http_sampler(item)
+#                 for element in elements:
+#                     threadGroupHashTree.append(element)
+#                     threadGroupHashTree.append(ET.Element("hashTree"))
+    
+#     if 'item' in data:
+#         process_items(data['item'])
+#     elif isinstance(data, list):
+#         process_items(data)
+    
+#     tree = ET.ElementTree(root)
+#     ET.indent(tree, space="  ", level=0)  # This function is available in Python 3.9+
+#     tree.write(jmx_file, encoding="UTF-8", xml_declaration=True)
+
+# if __name__ == "__main__":
+#     if len(sys.argv) != 3:
+#         print("Usage: python convert.py <input_json_file> <output_jmx_file>")
+#         sys.exit(1)
+    
+#     input_file = sys.argv[1]
+#     output_file = sys.argv[2]
+#     json_to_jmx(input_file, output_file)
+#     print(f"Conversion complete. JMX file saved as {output_file}")
 import json
 import xml.etree.ElementTree as ET
+from io import StringIO
+from http.server import BaseHTTPRequestHandler
+from urllib.parse import parse_qs
 
 def extract_url_parts(url):
     if '//' in url:
@@ -147,7 +286,6 @@ def create_http_sampler(item):
     ET.SubElement(sampler, "stringProp", name="HTTPSampler.path").text = path
     ET.SubElement(sampler, "stringProp", name="HTTPSampler.method").text = method
     
-    # Add more HTTP Sampler parameters
     ET.SubElement(sampler, "stringProp", name="HTTPSampler.contentEncoding").text = ""
     ET.SubElement(sampler, "stringProp", name="HTTPSampler.port").text = ""
     ET.SubElement(sampler, "boolProp", name="HTTPSampler.follow_redirects").text = "true"
@@ -185,10 +323,7 @@ def create_http_sampler(item):
     
     return [sampler]
 
-def json_to_jmx(json_file, jmx_file):
-    with open(json_file, 'r') as f:
-        data = json.load(f)
-    
+def json_to_jmx_string(data):
     root = ET.Element("jmeterTestPlan", version="1.2", properties="5.0", jmeter="5.4.1")
     hashTree = ET.SubElement(root, "hashTree")
     
@@ -235,15 +370,35 @@ def json_to_jmx(json_file, jmx_file):
         process_items(data)
     
     tree = ET.ElementTree(root)
-    ET.indent(tree, space="  ", level=0)  # This function is available in Python 3.9+
-    tree.write(jmx_file, encoding="UTF-8", xml_declaration=True)
+    string_io = StringIO()
+    ET.indent(tree, space="  ", level=0)
+    tree.write(string_io, encoding="unicode", xml_declaration=True)
+    return string_io.getvalue()
 
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python convert.py <input_json_file> <output_jmx_file>")
-        sys.exit(1)
-    
-    input_file = sys.argv[1]
-    output_file = sys.argv[2]
-    json_to_jmx(input_file, output_file)
-    print(f"Conversion complete. JMX file saved as {output_file}")
+class handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        content_length = int(self.headers['Content-Length'])
+        post_data = self.rfile.read(content_length)
+        
+        try:
+            # Parse JSON from request body
+            data = json.loads(post_data.decode('utf-8'))
+            
+            # Convert JSON to JMX
+            jmx_string = json_to_jmx_string(data)
+            
+            # Send response
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/xml')
+            self.send_header('Content-Disposition', 'attachment; filename="converted.jmx"')
+            self.end_headers()
+            self.wfile.write(jmx_string.encode('utf-8'))
+        except json.JSONDecodeError:
+            self.send_error(400, 'Invalid JSON input')
+        except Exception as e:
+            self.send_error(500, f'Error: {str(e)}')
+
+    def do_GET(self):
+        self.send_response(405)
+        self.end_headers()
+        self.wfile.write(b'Method Not Allowed')
