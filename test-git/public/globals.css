@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Light Theme */
+:root.light-theme {
+  --background-color: #ffffff;
+  --text-color: #000000;
+  --card-background: #f0f0f0;
+  --button-background: #007bff;
+}
+
+/* Dark Theme */
+:root.dark-theme {
+  --background-color: #000000;
+  --text-color: #ffffff;
+  --card-background: #333333;
+  --button-background: #007bff;
+}
+
+/* Apply theme styles */
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.card {
+  background-color: var(--card-background);
+}
+
+.button {
+  background-color: var(--button-background);
+  color: var(--text-color);
+}
+
+/* Position the theme toggle icons */
+.theme-toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.theme-toggle svg {
+  width: 2rem;
+  height: 2rem;
+  margin-left: 0.5rem;
+  transition: color 0.3s ease;
+}
