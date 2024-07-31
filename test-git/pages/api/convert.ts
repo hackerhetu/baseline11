@@ -312,6 +312,97 @@
 //     });
 //   });
 // }
+// import { IncomingForm, File } from 'formidable';
+// import fs from 'fs';
+// import path from 'path';
+// import { NextApiRequest, NextApiResponse } from 'next';
+// import { spawn } from 'child_process';
+
+// export const config = {
+//   api: {
+//     bodyParser: false,
+//   },
+// };
+
+// const uploadDir = path.join(process.cwd(), 'uploads');
+
+// if (!fs.existsSync(uploadDir)) {
+//   fs.mkdirSync(uploadDir, { recursive: true });
+// }
+
+// export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+//   if (req.method !== 'POST') {
+//     return res.status(405).json({ error: 'Method not allowed' });
+//   }
+
+//   const form = new IncomingForm({
+//     uploadDir: uploadDir,
+//     keepExtensions: true,
+//     allowEmptyFiles: true,
+//     minFileSize: 0,
+//   });
+
+//   form.parse(req, (err, fields, files) => {
+//     if (err) {
+//       return res.status(500).json({ error: 'Failed to parse form', details: err.message });
+//     }
+
+//     // Ensure the files object is not an array
+//     const jsonFile = (files.jsonFile && Array.isArray(files.jsonFile) ? files.jsonFile[0] : files.jsonFile) as File;
+
+//     if (!jsonFile) {
+//       return res.status(400).json({ error: 'No file uploaded' });
+//     }
+
+//     const originalFilePath = jsonFile.filepath;
+//     const tempInputFilePath = path.join(uploadDir, 'input.json');
+//     const outputFilePath = path.join(uploadDir, 'output.jmx');
+
+//     fs.copyFileSync(originalFilePath, tempInputFilePath);
+
+//     const pythonScript = path.join(process.cwd(), 'venv', 'scripts', 'convert.py');
+
+//     if (!fs.existsSync(pythonScript)) {
+//       fs.unlinkSync(tempInputFilePath);
+//       fs.unlinkSync(originalFilePath);
+//       return res.status(500).json({ error: 'Python script not found' });
+//     }
+
+//     const pythonProcess = spawn('python', [pythonScript, tempInputFilePath, outputFilePath]);
+
+//     let stdoutData = '';
+//     let stderrData = '';
+
+//     pythonProcess.stdout.on('data', (data) => {
+//       stdoutData += data;
+//     });
+
+//     pythonProcess.stderr.on('data', (data) => {
+//       stderrData += data;
+//     });
+
+//     pythonProcess.on('close', (code) => {
+//       if (code === 0) {
+//         res.setHeader('Content-Disposition', 'attachment; filename=output.jmx');
+//         res.setHeader('Content-Type', 'application/xml');
+//         const fileStream = fs.createReadStream(outputFilePath);
+//         fileStream.pipe(res);
+//         fileStream.on('close', () => {
+//           fs.unlinkSync(tempInputFilePath);
+//           fs.unlinkSync(originalFilePath);
+//           fs.unlinkSync(outputFilePath);
+//         });
+//       } else {
+//         fs.unlinkSync(tempInputFilePath);
+//         fs.unlinkSync(originalFilePath);
+//         res.status(500).json({
+//           error: 'Failed to convert JSON to JMX',
+//           details: stderrData || stdoutData || 'No additional error information available'
+//         });
+//       }
+//     });
+//   });
+// }
 import { IncomingForm, File } from 'formidable';
 import fs from 'fs';
 import path from 'path';
@@ -324,19 +415,12 @@ export const config = {
   },
 };
 
-const uploadDir = path.join(process.cwd(), 'uploads');
-
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const form = new IncomingForm({
-    uploadDir: uploadDir,
     keepExtensions: true,
     allowEmptyFiles: true,
     minFileSize: 0,
@@ -347,7 +431,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: 'Failed to parse form', details: err.message });
     }
 
-    // Ensure the files object is not an array
     const jsonFile = (files.jsonFile && Array.isArray(files.jsonFile) ? files.jsonFile[0] : files.jsonFile) as File;
 
     if (!jsonFile) {
@@ -355,8 +438,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const originalFilePath = jsonFile.filepath;
-    const tempInputFilePath = path.join(uploadDir, 'input.json');
-    const outputFilePath = path.join(uploadDir, 'output.jmx');
+    const tempInputFilePath = path.join(process.cwd(), 'input.json');
+    const outputFilePath = path.join(process.cwd(), 'output.jmx');
 
     fs.copyFileSync(originalFilePath, tempInputFilePath);
 
